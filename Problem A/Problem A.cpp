@@ -6,24 +6,54 @@ using namespace std;
 void AddCharNumbers(string, string, string&);
 void SubtractCharNumbers(string, string, string&);
 void MultiplyCharNumbers(string, string, string&);
+void DivideCharNumbers(string, string, string&);
+void DivideSmallCharNumbers(string, string, string&, string&);
+void RemoveLeadingZero(string&);
+void ZeroIfEmpty(string&);
 
 int main() {
-  string a = "12345678901234567890";
-  string b = "98765432109876543210";
+  string a = "";
+  string b = "";
   string sum = "";
-  AddCharNumbers(a, b, sum);
-  cout << " " << a << endl << "+" << b << endl << sum << endl << endl;
-
-  sum = "";
-  SubtractCharNumbers(a, b, sum);
-  cout << " " << a << endl << "-" << b << endl << sum << endl << endl;
-
-  sum = "";
-  MultiplyCharNumbers(a, b, sum);
-  cout << " " << a << endl << "*" << b << endl << sum << endl << endl;
+  string line = "";
+  int number_of_tests = 0;
+  cin >> number_of_tests;
+  for (size_t i = 0; i < number_of_tests; i++) {
+    cin >> line;
+    size_t found = line.find("+");
+    sum = "";
+    if (found != -1) {
+      a = line.substr(0, found);
+      b = line.substr(found + 1, line.length());
+      AddCharNumbers(a, b, sum);
+      ZeroIfEmpty(sum);
+    }
+    found = line.find("*");
+    if (found != -1) {
+      a = line.substr(0, found);
+      b = line.substr(found + 1, line.length());
+      MultiplyCharNumbers(a, b, sum);
+      ZeroIfEmpty(sum);
+    }
+    found = line.find("-");
+    if (found != -1) {
+      a = line.substr(0, found);
+      b = line.substr(found + 1, line.length());
+      SubtractCharNumbers(a, b, sum);
+      ZeroIfEmpty(sum);
+    }
+    found = line.find("/");
+    if (found != -1) {
+      a = line.substr(0, found);
+      b = line.substr(found + 1, line.length());
+      DivideCharNumbers(a, b, sum);
+      ZeroIfEmpty(sum);
+    }
+    cout << sum << endl;
+  }
 }
 
-void AddCharNumbers(string a, string b, string& sum) {
+void AddCharNumbers(string a, string b, string& result) {
   bool carry = 0;
   string temp_sum = "";
   if (a.length() > b.length()) {
@@ -42,13 +72,15 @@ void AddCharNumbers(string a, string b, string& sum) {
   if (carry) {
     temp_sum.insert(0, to_string(carry));
   }
-  sum = temp_sum;
+  RemoveLeadingZero(temp_sum);
+  result = temp_sum;
 }
 
-void SubtractCharNumbers(string a, string b, string& sum) {
+void SubtractCharNumbers(string a, string b, string& result) {
   bool carry = 0;
+  string temp_sum = "";
   if (a.length() < b.length()) {
-    for (size_t i = 0; i < b.length() - a.length(); i++) {
+    for (size_t i = 0; i < a.length() - b.length(); i++) {
       a.insert(0, "0");
     }
   }
@@ -62,16 +94,19 @@ void SubtractCharNumbers(string a, string b, string& sum) {
     } else {
       carry = 0;
     }
-    sum.insert(0, to_string(current_number % 10));
+    temp_sum.insert(0, to_string(current_number % 10));
   }
   if (carry) {  // a < b
-    sum = "";
-    SubtractCharNumbers(b, a, sum);
-    sum.insert(0, "-");
+    temp_sum = "";
+    SubtractCharNumbers(b, a, temp_sum);
+    temp_sum.insert(0, "-");
   }
+  RemoveLeadingZero(temp_sum);
+  result = temp_sum;
 }
 
-void MultiplyCharNumbers(string a, string b, string& sum) {
+void MultiplyCharNumbers(string a, string b, string& result) {
+  string temp_result = "";
   for (size_t i = 1; i <= b.length(); i++) {
     int current_number = 0;
     int carry = 0;
@@ -94,10 +129,61 @@ void MultiplyCharNumbers(string a, string b, string& sum) {
     if (carry) {
       temp_sum.insert(0, to_string(carry));
     }
-    if (sum.length()) {
-      AddCharNumbers(temp_sum, sum, sum);
+    if (temp_result.length()) {
+      AddCharNumbers(temp_sum, temp_result, temp_result);
     } else {
-      sum = temp_sum;
+      temp_result = temp_sum;
     }
   }
+  RemoveLeadingZero(temp_result);
+  result = temp_result;
+}
+
+void DivideSmallCharNumbers(string a, string b, string& sum, string& rem) {
+  string temp_sum = "";
+  string temp_sum2 = "";
+  string temp_rem = a;
+  int sum_int = 0;
+  RemoveLeadingZero(b);
+  if (b == "") {
+    sum = "NaN";
+    return;
+  }
+  while (1) {
+    AddCharNumbers(temp_sum, b, temp_sum);
+    SubtractCharNumbers(a, temp_sum, temp_sum2);
+    RemoveLeadingZero(temp_sum2);
+    if (temp_sum2[0] == '-') {
+      break;
+    } else {
+      temp_rem = temp_sum2;
+    }
+    sum_int++;
+  }
+  rem = temp_rem;
+  sum = to_string(sum_int);
+}
+
+void DivideCharNumbers(string a, string b, string& result) {
+  string temp_result = "";
+  string temp_rem = a.substr(0, 1);
+  RemoveLeadingZero(b);
+  if (b == "") {
+    result = "NaN";
+    return;
+  }
+  for (size_t i = 0; i < a.length(); i++) {
+    DivideSmallCharNumbers(temp_rem, b, temp_result, temp_rem);
+    result.append(temp_result);
+    temp_rem.append(a.substr(i + 1, 1));
+  }
+  RemoveLeadingZero(result);
+}
+
+void RemoveLeadingZero(string& str) {
+  str.erase(0, str.find_first_not_of('0'));
+}
+
+void ZeroIfEmpty(string& str) {
+  if (str.length() == 0) str = "0";
 }
