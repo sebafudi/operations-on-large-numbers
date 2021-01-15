@@ -16,7 +16,7 @@ int main() {
   string b = "";
   string sum = "";
   string line = "";
-  int number_of_tests = 0;
+  size_t number_of_tests = 0;
   cin >> number_of_tests;
   for (size_t i = 0; i < number_of_tests; i++) {
     cin >> line;
